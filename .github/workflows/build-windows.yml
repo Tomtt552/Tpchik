@@ -13,24 +13,33 @@ permissions:
 
 jobs:
   build:
+    name: Build Fusion Desktop for Windows
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Download project
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+      - name: Check project files
+        shell: pwsh
+        run: |
+          Write-Host "Checking Fusion Desktop project..."
+          if (!(Test-Path "package.json")) {
+            throw "package.json not found in repository root"
+          }
+
       - name: Install dependencies
         run: npm install
 
-      - name: Build Windows installer
-        run: npm run build:win
+      - name: Build Fusion Desktop EXE
+        run: npm run build:win -- --publish never
 
-      - name: Upload EXE installer
+      - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
           name: Fusion-Desktop-Windows-Installer
