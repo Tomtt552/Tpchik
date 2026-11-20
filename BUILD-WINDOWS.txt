@@ -1,0 +1,17 @@
+FUSION DESKTOP 0.13.1 — WINDOWS BUILD
+
+GitHub Actions (recommended):
+1. Extract this ZIP.
+2. Upload the CONTENTS of fusion_stage1/ to the root of a GitHub repository. Keep .github/workflows/build-windows.yml.
+3. Open Actions → Build Fusion Desktop for Windows → Run workflow.
+4. Download artifact Fusion-Desktop-0.13.1-Windows-x64.
+5. Extract the artifact ZIP to obtain Fusion Desktop-0.13.1-Setup-x64.exe.
+
+Local Windows build:
+1. Install Node.js 22 LTS.
+2. Open PowerShell in the project folder.
+3. Run: npm install --no-audit --no-fund
+4. Run: npm run build:win
+5. Installer is written to dist/.
+
+This source archive is not itself a compiled EXE. Build and hardware validation require Windows.

@@ -1,0 +1,14 @@
+FUSION DESKTOP 0.13.1 — BUILD ON GITHUB
+
+1. Create a GitHub repository.
+2. Extract this archive and upload the CONTENTS of fusion_stage1/ to the repository root.
+   IMPORTANT: include the hidden .github/workflows/build-windows.yml file.
+3. Open the repository Actions tab.
+4. Select “Build Fusion Desktop for Windows”.
+5. Click “Run workflow” (or push to main/master).
+6. Wait for the Windows build to finish successfully.
+7. Download artifact: Fusion-Desktop-0.13.1-Windows-x64
+8. Extract the artifact ZIP to get Fusion Desktop-0.13.1-Setup-x64.exe.
+
+The workflow uses a GitHub-hosted Windows runner, Node.js 22 and electron-builder NSIS.
+No GitHub token or secret is required. This source archive is not a compiled installer.

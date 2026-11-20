@@ -1,0 +1,299 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Fusion</title>
+<style>
+:root{--bg:#09090b;--tx:#fff;--mut:rgba(255,255,255,.5);--gl:rgba(28,28,32,.62);--ln:rgba(255,255,255,.09);--h:220;--accent:#b9a0ff;--accent-soft:rgba(150,110,255,.14)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font-family:Inter,"Segoe UI",system-ui,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.app{display:grid;grid-template-columns:76px 1fr;height:100%}
+.drag{position:fixed;top:0;left:0;right:140px;height:40px;-webkit-app-region:drag;z-index:50}
+.rail{display:flex;flex-direction:column;align-items:center;gap:10px;padding:52px 0 18px;z-index:5}
+.rb{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;color:var(--mut);transition:.2s;position:relative;font-weight:700;font-size:13px}
+.rb:hover{background:rgba(255,255,255,.08);color:#fff}
+.rb.on{background:#fff;color:#000}
+.rb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rb[data-t]:hover::after{content:attr(data-t);position:absolute;left:58px;white-space:nowrap;background:#1c1c20;border:1px solid var(--ln);padding:6px 10px;border-radius:10px;font-weight:500;color:#fff;z-index:9}
+.sep{width:26px;height:1px;background:var(--ln);margin:4px 0}
+.stage{position:relative;min-width:0;height:100%;overflow:hidden}
+#wallpaperLayer{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;background-size:cover;background-position:center;opacity:.38}#wallpaperLayer video{width:100%;height:100%;object-fit:cover}#wallpaperLayer~.view,#wallpaperLayer~#loc{z-index:1}.app{position:relative}
+.rail{position:relative}.railGroup{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px}.railLabel{font-size:9px;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;margin-top:5px}.rb.category{border:1px solid var(--ln);background:rgba(255,255,255,.045)}.rb.category.on{background:var(--accent);color:#111}.railGroup{position:relative}.serviceSub{position:absolute;left:55px;top:0;z-index:35;display:flex;flex-direction:column;gap:5px;width:190px;max-height:0;padding:0 8px;overflow:hidden;opacity:0;transform:translateX(-8px);border:1px solid transparent;border-radius:16px;background:rgba(18,18,23,.96);backdrop-filter:blur(24px);box-shadow:0 18px 45px #0008;transition:max-height .24s,opacity .2s,transform .24s,padding .24s}.serviceSub.open{max-height:260px;padding:10px 8px;opacity:1;transform:translateX(0);border-color:var(--ln)}.serviceSub .rb{width:100%;height:40px;font-size:12px;display:flex;justify-content:flex-start;padding:0 12px;border-radius:11px}.subClose{align-self:flex-end;width:26px;height:26px;border-radius:50%;background:#ffffff12;font-size:18px}
+.field{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--ln);background:rgba(255,255,255,.07);color:#fff;outline:none;font:inherit}.field::placeholder{color:rgba(255,255,255,.38)}.hint{font-size:11px;color:var(--mut);line-height:1.5}.wallPreview{height:82px;border-radius:14px;border:1px solid var(--ln);background:linear-gradient(135deg,#242034,#101014);background-size:cover;background-position:center}
+.bgart{position:absolute;inset:-20%;background:radial-gradient(60% 55% at 70% 25%,hsl(var(--h) 85% 48%/.75),transparent 70%),radial-gradient(50% 50% at 15% 85%,hsl(calc(var(--h) + 50) 80% 35%/.55),transparent 70%);filter:blur(60px);transition:background 1.2s}
+.view{position:absolute;inset:0}
+.lyr{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 9% 120px;gap:18px}
+.ln{font-size:clamp(30px,5.2vw,76px);font-weight:800;line-height:1.05;letter-spacing:-.035em;opacity:.28;filter:blur(5px);transition:.5s;text-align:left;overflow-wrap:anywhere}
+.ln.cur{opacity:1;filter:none}.ln:hover{opacity:.6}.ln.cur:hover{opacity:1}
+.empty{font-size:clamp(26px,4vw,54px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.empty p{font-size:16px;font-weight:500;color:var(--mut);letter-spacing:0;margin:14px 0 22px}
+.library{width:min(900px,100%);height:100%;display:flex;flex-direction:column;gap:16px;min-height:0;padding-top:4px}.libhead{display:flex;align-items:center;justify-content:space-between;gap:14px}.libtitle{font-size:clamp(28px,3vw,42px);font-weight:800;letter-spacing:-.04em}.libsub{font-size:13px;color:var(--mut);margin-top:4px}.libactions{display:flex;gap:8px;flex-wrap:wrap}.action{padding:10px 14px;border-radius:13px;background:rgba(255,255,255,.1);border:1px solid var(--ln);font-size:13px;font-weight:650}.action.primary{background:#fff;color:#111}.action.active{background:var(--accent-soft);border-color:var(--accent)}.libtools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.search{background:rgba(255,255,255,.08);border:1px solid var(--ln);border-radius:12px;padding:10px 13px;color:#fff;min-width:180px;outline:none}.tracklist{overflow:auto;display:flex;flex:1;min-height:0;flex-direction:column;gap:5px;padding-right:6px}.trackrow{display:grid;grid-template-columns:38px minmax(0,1fr) 36px 36px;align-items:center;gap:10px;padding:9px 12px;border:1px solid transparent;border-radius:14px;text-align:left;background:rgba(255,255,255,.045)}.trackrow:hover,.trackrow.current{background:rgba(255,255,255,.11);border-color:var(--ln)}.tracknum{width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.09);display:grid;place-items:center;color:var(--mut);font-size:12px}.trackname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:650}.trackmeta{font-size:11px;color:var(--mut);margin-top:3px}.trackrow .tiny{color:var(--mut);font-size:17px;text-align:center}.trackrow .tiny.fav{color:#ff7da8}.libempty{color:var(--mut);padding:24px;text-align:center;border:1px dashed var(--ln);border-radius:18px}.playlistchips{display:flex;gap:6px;flex-wrap:wrap}
+.pill{background:#fff;color:#000;border-radius:99px;padding:12px 22px;font-weight:700;display:inline-block}
+.dim{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 160px rgba(0,0,0,.55)}
+.bar{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);width:min(760px,calc(100% - 48px));height:76px;border-radius:26px;background:var(--gl);backdrop-filter:blur(28px);border:1px solid var(--ln);display:flex;align-items:center;gap:14px;padding:0 18px;z-index:6}
+.bar .info{width:190px;min-width:0}.bar .info b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar .info span{font-size:12px;color:var(--mut)}
+.mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.btns{display:flex;align-items:center;gap:8px}
+.ib{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;transition:.2s}.ib:hover{background:rgba(255,255,255,.1)}.ib.mode{font-size:13px;color:var(--mut);font-weight:700}.ib.mode.on{color:var(--accent);background:var(--accent-soft)}
+.ib svg{width:18px;height:18px;fill:currentColor}
+.pl{width:42px;height:42px;background:#fff;color:#000}.pl:hover{background:#fff;transform:scale(1.07)}
+.sk{display:flex;align-items:center;gap:9px;width:100%;font-size:11px;color:var(--mut)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:9px;background:linear-gradient(90deg,#fff var(--p,0%),rgba(255,255,255,.2) var(--p,0%));flex:1;min-width:0;cursor:pointer;margin:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;opacity:0;transition:.15s}
+input[type=range]:hover::-webkit-slider-thumb{opacity:1}
+.bar.svc{width:auto;left:auto;right:24px;transform:none;height:56px;padding:0 10px}
+.bar.svc .loc{display:none}
+#pop{position:absolute;right:0;top:50%;width:min(470px,calc(100% - 18px));max-height:calc(100% - 90px);overflow:auto;border-radius:24px 0 0 24px;background:rgba(24,24,28,.92);backdrop-filter:blur(30px);border:1px solid var(--ln);display:grid;grid-template-columns:150px minmax(0,1fr);z-index:20;box-shadow:0 24px 70px rgba(0,0,0,.6);transform:translate( calc(100% - 12px), -50%);transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s}
+#pop:hover,#pop.show,#pop:focus-within{transform:translate(0,-50%);box-shadow:0 24px 70px rgba(0,0,0,.72)}
+#pop.closed{transform:translate(calc(100% - 12px),-50%)!important}
+#popEdge{position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:21;width:28px;height:76px;border-radius:16px 0 0 16px;background:rgba(35,35,42,.94);border:1px solid var(--ln);color:#fff;font-size:22px;box-shadow:0 8px 25px #0005;transition:opacity .2s;cursor:pointer}
+#pop.show+#popEdge{opacity:0;pointer-events:none}
+#popClose{position:absolute;right:12px;top:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.09);font-size:20px;line-height:1;z-index:2}
+#popClose:hover{background:rgba(255,255,255,.2)}
+.pn{padding-top:48px}
+.menu{padding:10px;border-right:1px solid var(--ln);display:flex;flex-direction:column;gap:2px}
+.mi{padding:10px 12px;border-radius:12px;text-align:left;color:var(--mut);font-size:14px;transition:.15s}
+.mi:hover{background:rgba(255,255,255,.07);color:#fff}.mi.on{background:rgba(255,255,255,.12);color:#fff}
+.pn{padding:18px;display:grid;gap:14px;align-content:start;min-height:250px}
+.pn h4{margin:0;font-size:15px}.pn small{color:var(--mut);line-height:1.4}
+.r{display:grid;gap:7px;font-size:13px;color:var(--mut)}.r div{display:flex;justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.ch{padding:7px 13px;border-radius:99px;background:rgba(255,255,255,.08);font-size:13px;transition:.15s}.ch:hover{background:rgba(255,255,255,.15)}.ch.on{background:var(--accent);color:#08080a;font-weight:700}
+.tg{width:44px;height:26px;border-radius:99px;background:rgba(255,255,255,.2);position:relative;transition:.2s}.tg::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}.tg.on{background:#34c759}.tg.on::after{left:21px}
+webview{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.note{position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(40,32,10,.92);border:1px solid rgba(251,191,36,.4);color:#fde68a;padding:12px 18px;border-radius:16px;font-size:14px;display:none;max-width:560px;line-height:1.4}
+.note.show{display:block}
+.hide{display:none!important}
+
+/* Fusion AI — local command assistant foundation */
+.aiWrap{display:flex;flex-direction:column;gap:12px;min-height:360px}.aiHero{padding:15px;border:1px solid var(--ln);border-radius:16px;background:linear-gradient(135deg,rgba(185,160,255,.16),rgba(112,214,255,.07))}.aiOrb{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff,#b9a0ff 38%,#6950a8 75%);box-shadow:0 0 24px #b9a0ff66;color:#17131f;font-size:19px}.aiLog{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow:auto;padding:2px}.aiMsg{max-width:92%;padding:10px 12px;border:1px solid var(--ln);border-radius:13px;background:rgba(255,255,255,.055);font-size:12px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.aiMsg.user{align-self:flex-end;background:rgba(185,160,255,.16);border-color:rgba(185,160,255,.25)}.aiInputRow{display:flex;gap:7px}.aiInput{min-width:0;flex:1;padding:11px 12px;border-radius:12px;border:1px solid var(--ln);background:rgba(0,0,0,.2);color:var(--tx);outline:none}.aiSend{padding:0 15px;border-radius:12px;background:var(--accent);color:#111;font-weight:700}.aiQuick{display:flex;flex-wrap:wrap;gap:6px}.aiQuick .ch{font-size:11px}
+
+
+.pcGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.pcCard{padding:13px;border:1px solid var(--ln);border-radius:15px;background:rgba(255,255,255,.045);display:grid;gap:7px;min-width:0}.pcCard.wide{grid-column:1/-1}.pcCard small,.pcCard span{color:var(--mut);font-size:11px}.pcCard b{font-size:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pcTrack{height:6px;border-radius:99px;background:#ffffff18;overflow:hidden}.pcTrack i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .35s}.pcHistory{padding:12px;border:1px solid var(--ln);border-radius:14px;background:rgba(255,255,255,.025);display:grid;gap:10px}.pcHistoryHead{display:flex;justify-content:space-between;gap:8px;align-items:center}.pcHistoryHead b{font-size:12px}.pcHistoryHead span,.pcHistoryGrid label{font-size:10px;color:var(--mut)}.pcHistoryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.pcHistoryGrid>div{min-width:0}.pcHistoryGrid label{display:block;margin-bottom:6px}.pcSpark{height:48px;display:flex;align-items:end;gap:2px;overflow:hidden;border-bottom:1px solid var(--ln);background:linear-gradient(to top,rgba(255,255,255,.035),transparent)}.pcSpark i{flex:1;min-width:2px;border-radius:3px 3px 0 0;background:var(--accent);transition:height .25s}.pcInfo{font-size:12px;color:var(--mut);line-height:1.6;padding:10px 12px;border:1px solid var(--ln);border-radius:12px}
+</style></head><body>
+<div class="drag"></div>
+<div class="app">
+ <nav class="rail" id="rail"></nav>
+ <main class="stage" id="stage">
+  <div id="wallpaperLayer" aria-hidden="true"></div>
+  <div class="view" id="loc"><div class="bgart" id="bg"></div><div class="dim"></div><div class="lyr" id="lyr"></div></div>
+  <div class="note" id="note"></div>
+  <div class="bar" id="bar">
+   <div class="info loc"><b id="t1">Ничего не играет</b><span id="t2">Мои файлы</span></div>
+   <div class="mid loc"><div class="btns">
+     <button class="ib mode" id="shuffle" title="Перемешивание" aria-label="Перемешивание">⤨</button>
+     <button class="ib" id="prev"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zM20 6v12L9.5 12z"/></svg></button>
+     <button class="ib pl" id="play"><svg viewBox="0 0 24 24" id="pi"><path d="M8 5v14l11-7z"/></svg></button>
+     <button class="ib" id="next"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM4 6v12l10.5-6z"/></svg></button><button class="ib mode" id="repeat" title="Повтор: выключен" aria-label="Повтор">↻</button></div>
+     <div class="sk"><span id="cur">0:00</span><input type="range" id="seek" min="0" max="1000" value="0"><span id="dur">0:00</span></div></div>
+   <input class="loc" type="range" id="vol" min="0" max="100" value="80" style="width:70px;flex:none">
+   <button class="ib" id="fxb" title="Звук"><svg viewBox="0 0 24 24"><path d="M4 7h10v2H4zM18 7h2v2h-2zM14 5h2v6h-2zM4 15h2v2H4zM10 15h10v2H10zM6 13h2v6H6z"/></svg></button><button class="ib" id="islandBtn" title="Свернуть в Dynamic Island" style="font-size:17px;font-weight:800">◉</button>
+  </div>
+  <div id="pop"><button id="popClose" title="Закрыть">×</button><div class="menu" id="menu"></div><div class="pn" id="pn"></div></div><button id="popEdge" title="Показать настройки" aria-label="Показать настройки">‹</button>
+ </main>
+</div>
+<input type="file" id="file" accept="audio/*" multiple hidden>
+<script src="fx.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const SV=[{id:'yt',n:'YouTube',u:'https://www.youtube.com',l:'YT',group:'music',vpn:1},{id:'ytm',n:'YouTube Music',u:'https://music.youtube.com',l:'YM',group:'music',vpn:1},{id:'sc',n:'SoundCloud',u:'https://soundcloud.com',l:'SC',group:'music'},{id:'ya',n:'Яндекс Музыка',u:'https://music.yandex.ru',l:'Я',group:'music'},{id:'vk',n:'VK Музыка',u:'https://vk.com/music',l:'VK',group:'music'},{id:'tg',n:'Telegram',u:'https://web.telegram.org/k/',l:'TG',group:'messengers'},{id:'vkmsg',n:'ВКонтакте',u:'https://vk.com/im',l:'ВК',group:'messengers'}];
+let activeGroup='';
+let cur='loc',views={},currentSource='Локальная музыка',embeddedState=null;
+const DEFAULTS={eq:Array(10).fill(0),room:'off',wet:30,orb:'off',crush:0,vinyl:0,speed:1,accent:'#b9a0ff',active:false};
+const S=(()=>{try{const saved=JSON.parse(localStorage.getItem('fusion-settings')||'{}');let eq=Array.isArray(saved.eq)?saved.eq.slice(0,10):[];if(eq.length===3)eq=[eq[0],eq[0],eq[0],eq[1],eq[1],eq[1],eq[1],eq[2],eq[2],eq[2]];while(eq.length<10)eq.push(0);return {...DEFAULTS,...saved,eq}}catch{return {...DEFAULTS}}})();
+const home='<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg>';
+function rail(){const r=$('#rail');r.innerHTML=`<button class="rb ${cur==='loc'?'on':''}" data-t="Мои файлы" data-id="loc">${home}</button><div class="sep"></div><div class="railGroup"><button class="rb category ${activeGroup==='music'?'on':''}" id="musicGroup" data-t="Музыка">♫</button><span class="railLabel">Музыка</span><div class="serviceSub ${activeGroup==='music'?'open':''}"><button class="subClose" data-close-group title="Закрыть">×</button>${SV.filter(s=>s.group==='music').map(s=>`<button class="rb ${cur===s.id?'on':''}" data-t="${s.n}" data-id="${s.id}">${s.l}　${s.n}</button>`).join('')}</div></div><div class="railGroup"><button class="rb category ${activeGroup==='messengers'?'on':''}" id="messengerGroup" data-t="Мессенджеры">✉</button><span class="railLabel">Чаты</span><div class="serviceSub ${activeGroup==='messengers'?'open':''}"><button class="subClose" data-close-group title="Закрыть">×</button>${SV.filter(s=>s.group==='messengers').map(s=>`<button class="rb ${cur===s.id?'on':''}" data-t="${s.n}" data-id="${s.id}">${s.l}　${s.n}</button>`).join('')}</div></div>`;
+ r.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{go(b.dataset.id);activeGroup=SV.find(s=>s.id===b.dataset.id)?.group||'';rail()});$('#musicGroup').onclick=()=>{activeGroup=activeGroup==='music'?'':'music';rail()};$('#messengerGroup').onclick=()=>{activeGroup=activeGroup==='messengers'?'':'messengers';rail()};r.querySelectorAll('[data-close-group]').forEach(b=>b.onclick=()=>{activeGroup='';rail()})}
+
+function go(id){cur=id;currentSource=id==='loc'?'Локальная музыка':(SV.find(x=>x.id===id)?.n||'Fusion');embeddedState=null;publishNowPlaying();$('#pop').classList.remove('show');$('#loc').classList.toggle('hide',id!=='loc');$('#bar').classList.toggle('svc',id!=='loc');
+ Object.values(views).forEach(v=>v.classList.add('hide'));$('#note').classList.remove('show');
+ if(id!=='loc'){const s=SV.find(x=>x.id===id);let v=views[id];
+  if(!v){v=document.createElement('webview');v.src=s.u;v.setAttribute('partition','persist:'+id);v.setAttribute('preload',new URL('fx-preload.js',location.href).href);v.setAttribute('webpreferences','sandbox=no');
+   v.addEventListener('dom-ready',()=>{v.send('fx',S);readEmbeddedMedia(id,v)});
+   v.addEventListener('media-started-playing',()=>readEmbeddedMedia(id,v));
+   v.addEventListener('media-paused',()=>readEmbeddedMedia(id,v));
+   v.addEventListener('page-title-updated',()=>readEmbeddedMedia(id,v));
+   v.addEventListener('did-fail-load',e=>{if(e.errorCode!==-3&&e.isMainFrame&&s.vpn){const n=$('#note');n.textContent='Не открывается? Включи VPN и перезагрузи вкладку (Ctrl+R).';n.classList.add('show')}});
+   $('#stage').insertBefore(v,$('#bar'));views[id]=v}
+  v.classList.remove('hide');readEmbeddedMedia(id,v)}
+ rail()}
+/* ---- persistent local library ---- */
+const a=new Audio();let tr=[],ix=-1,fx,ctx;
+let shuffleOn=false,repeatMode=0,shuffleBag=[];
+let libraryView='all', searchTerm='';
+const loadJSON=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)||'null');return v??fallback}catch{return fallback}};
+let playlists=loadJSON('fusion-playlists',{}), favorites=new Set(loadJSON('fusion-favorites',[])), history=loadJSON('fusion-history',[]);
+function persistLibrary(){try{localStorage.setItem('fusion-library',JSON.stringify(tr.map(({name,url,path,size})=>({name,url,path,size}))));localStorage.setItem('fusion-playlists',JSON.stringify(playlists));localStorage.setItem('fusion-favorites',JSON.stringify([...favorites]));localStorage.setItem('fusion-history',JSON.stringify(history.slice(0,100)))}catch{}}
+function refillShuffle(){shuffleBag=tr.map((_,i)=>i).filter(i=>i!==ix);for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]]}}
+function syncModes(){ $('#shuffle').classList.toggle('on',shuffleOn);$('#repeat').classList.toggle('on',repeatMode>0);$('#repeat').textContent=repeatMode===2?'↻¹':'↻';$('#repeat').title=['Повтор: выключен','Повтор: весь список','Повтор: один трек'][repeatMode]; }
+function publishNowPlaying(){
+ const localTitle=ix>=0&&tr[ix]?tr[ix].name:'Ничего не играет';
+ const local={title:localTitle,artist:ix>=0?'Локальная музыка':currentSource,playing:!a.paused,currentTime:a.currentTime||0,duration:Number.isFinite(a.duration)?a.duration:0,source:currentSource};
+ const state=cur!=='loc'?(embeddedState?{...embeddedState,source:currentSource}:{title:'Ожидание воспроизведения',artist:currentSource,playing:false,currentTime:0,duration:0,source:currentSource}):local;
+ if(systemAudioEnabled){state.level=systemSpectrum.reduce((a,b)=>a+b,0)/5;state.spectrum=systemSpectrum}
+ if(window.fusionBridge)window.fusionBridge.publishNowPlaying(state);
+ if('mediaSession' in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:state.title,artist:state.artist,album:'Fusion Desktop'})}catch{}try{navigator.mediaSession.playbackState=state.playing?'playing':'paused'}catch{}}
+}
+function publishNowPlayingWithSystemAudio(level,spectrum){
+ const localActive=cur==='loc'&&ix>=0&&!a.paused;
+ const remoteActive=cur!=='loc'&&Boolean(embeddedState?.playing);
+ let state;
+ if(!localActive&&!remoteActive&&level>.025)state={title:'Системный звук',artist:'Windows · системный аудиовыход',playing:true,currentTime:0,duration:0,source:'Windows Audio',level,spectrum};
+ else {const base=cur!=='loc'?(embeddedState||{title:'Ожидание воспроизведения',artist:currentSource,source:currentSource}):{title:ix>=0&&tr[ix]?tr[ix].name:'Ничего не играет',artist:'Локальная музыка',source:currentSource,playing:!a.paused,currentTime:a.currentTime||0,duration:Number.isFinite(a.duration)?a.duration:0};state={...base,level,spectrum}}
+ window.fusionBridge?.publishNowPlaying(state);
+}
+function stopSystemAudio(){systemAudioEnabled=false;clearInterval(systemAudioTimer);systemAudioTimer=null;if(systemAudioStream){systemAudioStream.getTracks().forEach(t=>t.stop());systemAudioStream=null}if(systemAudioContext){systemAudioContext.close().catch(()=>{});systemAudioContext=null}systemSpectrum=[0,0,0,0,0];publishNowPlaying()}
+async function readEmbeddedMedia(id,view){
+ if(!view||cur!==id)return;
+ try{
+  const data=await view.executeJavaScript(`(()=>{const m=[...document.querySelectorAll('video,audio')].find(x=>!x.paused&&!x.ended)||[...document.querySelectorAll('video,audio')][0];const meta=(s)=>document.querySelector(s)?.content||'';let title=meta('meta[property="og:title"]')||document.title||'Музыка';title=title.replace(/\s*[-|–]\s*(YouTube|SoundCloud|Яндекс Музыка|VK)$/i,'').trim();const artist=meta('meta[name="music:musician"]')||meta('meta[property="og:audio:artist"]')||document.querySelector('[class*="subtitle"],[class*="artist"],[data-testid*="artist"]')?.textContent?.trim()||' ';return {title,artist,playing:!!m&&!m.paused,currentTime:m?.currentTime||0,duration:Number.isFinite(m?.duration)?m.duration:0,art:meta('meta[property="og:image"]')||''}})()`);
+  if(cur!==id)return;
+  embeddedState={...data,source:currentSource};publishNowPlaying();
+ }catch{}
+}
+setInterval(()=>{if(cur!=='loc'&&views[cur])readEmbeddedMedia(cur,views[cur]);},1200);
+if('mediaSession' in navigator){const handlers={play:()=>play(),pause:()=>a.pause(),previoustrack:()=>$('#prev').click(),nexttrack:()=>$('#next').click()};for(const [action,handler] of Object.entries(handlers)){try{navigator.mediaSession.setActionHandler(action,handler)}catch{}}}
+function saveSettings(){try{localStorage.setItem('fusion-settings',JSON.stringify(S))}catch{}}
+function applyWallpaper(item){const layer=$('#wallpaperLayer');layer.innerHTML='';layer.style.backgroundImage='';if(!item?.url)return; if(item.type==='video'){const v=document.createElement('video');v.src=item.url;v.autoplay=true;v.loop=true;v.muted=true;v.playsInline=true;layer.appendChild(v)}else{layer.style.backgroundImage=`url("${item.url.replace(/\"/g,'%22')}")`}}
+try{const savedWallpaper=loadJSON('fusion-wallpaper',null);if(savedWallpaper?.url)applyWallpaper(savedWallpaper)}catch{}
+function applyAccent(){const allowed=['#b9a0ff','#70d6ff','#7ee0a3','#ff9cbd','#ffbf69','#ffffff'];if(!allowed.includes(S.accent))S.accent=DEFAULTS.accent;document.documentElement.style.setProperty('--accent',S.accent);document.documentElement.style.setProperty('--accent-soft',S.accent+'2b')}
+applyAccent();
+$('#islandBtn').onclick=()=>window.fusionBridge?.minimizeToIsland();
+const fmt=t=>isFinite(t)?Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0'):'0:00';
+function filteredTracks(){let list=tr.map((t,i)=>({...t,i}));if(libraryView==='favorites')list=list.filter(t=>favorites.has(t.path));else if(libraryView==='history')list=list.filter(t=>history.includes(t.path)).sort((a,b)=>history.indexOf(a.path)-history.indexOf(b.path));else if(libraryView.startsWith('playlist:'))list=list.filter(t=>(playlists[libraryView.slice(9)]||[]).includes(t.path));if(searchTerm)list=list.filter(t=>t.name.toLowerCase().includes(searchTerm.toLowerCase()));return list}
+function renderLibrary(){
+ const L=$('#lyr');
+ const title=libraryView==='favorites'?'Избранное':libraryView==='history'?'Недавно прослушано':libraryView.startsWith('playlist:')?libraryView.slice(9):'Моя медиатека';
+ const rows=filteredTracks();
+ L.innerHTML=`<section class="library"><header class="libhead"><div><div class="libtitle">${escapeHTML(title)}</div><div class="libsub">${tr.length} треков в коллекции · данные сохраняются на этом компьютере</div></div><div class="libactions"><button class="action primary" id="importMusic">＋ Добавить музыку</button></div></header><div class="libtools"><button class="action ${libraryView==='all'?'active':''}" data-view="all">Все треки</button><button class="action ${libraryView==='favorites'?'active':''}" data-view="favorites">♥ Избранное</button><button class="action ${libraryView==='history'?'active':''}" data-view="history">◷ История</button><button class="action" id="newPlaylist">＋ Плейлист</button><input class="search" id="searchMusic" placeholder="Поиск по медиатеке…" value="${escapeHTML(searchTerm)}"></div><div class="playlistchips">${Object.keys(playlists).map(n=>`<button class="action ${libraryView==='playlist:'+n?'active':''}" data-playlist="${escapeHTML(n)}">${escapeHTML(n)}</button>`).join('')}</div><div class="tracklist">${rows.length?rows.map(t=>`<div class="trackrow ${t.i===ix?'current':''}" data-index="${t.i}"><button class="tracknum" data-play="${t.i}">${t.i===ix&&!a.paused?'Ⅱ':'▶'}</button><div style="min-width:0"><div class="trackname">${escapeHTML(t.name)}</div><div class="trackmeta">${t.i===ix?'Сейчас играет':'Локальный файл'}</div></div><button class="tiny ${favorites.has(t.path)?'fav':''}" data-fav="${t.i}" title="В избранное">${favorites.has(t.path)?'♥':'♡'}</button><button class="tiny" data-add="${t.i}" title="В плейлист">＋</button></div>`).join(''):'<div class="libempty">Здесь пока нет треков. Нажми «Добавить музыку», чтобы импортировать аудиофайлы.</div>'}</div></section>`;
+ $('#importMusic').onclick=importMusic;
+ $('#searchMusic').oninput=e=>{searchTerm=e.target.value;const pos=e.target.selectionStart;renderLibrary();const inp=$('#searchMusic');inp.focus();inp.setSelectionRange(pos,pos)};
+ L.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{libraryView=b.dataset.view;renderLibrary()});
+ L.querySelectorAll('[data-playlist]').forEach(b=>b.onclick=()=>{libraryView='playlist:'+b.dataset.playlist;renderLibrary()});
+ L.querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>load(+b.dataset.play));
+ L.querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{const t=tr[+b.dataset.fav];if(favorites.has(t.path))favorites.delete(t.path);else favorites.add(t.path);persistLibrary();renderLibrary()});
+ L.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const names=Object.keys(playlists);if(!names.length){createPlaylist();return}const choice=prompt('В какой плейлист добавить?\n'+names.join('\n'),names[0]);if(choice&&playlists[choice]){const path=tr[+b.dataset.add].path;if(!playlists[choice].includes(path))playlists[choice].push(path);persistLibrary();renderLibrary()}});
+ $('#newPlaylist').onclick=createPlaylist;
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function lyr(){renderLibrary()}
+async function importMusic(){try{const items=await window.fusionBridge?.importAudio();if(items?.length)addImported(items)}catch(e){console.error(e)}}
+function addImported(items){const known=new Set(tr.map(t=>t.path));for(const item of items||[]){if(!item?.path||known.has(item.path))continue;tr.push({name:item.name||'Без названия',path:item.path,url:item.url,size:item.size||0});known.add(item.path)}persistLibrary();if(shuffleOn)refillShuffle();if(ix<0&&tr.length)load(0);else renderLibrary()}
+function createPlaylist(){const name=prompt('Название нового плейлиста');if(!name)return;const clean=name.trim().slice(0,40);if(!clean)return;if(['__proto__','constructor','prototype'].includes(clean.toLowerCase())||Object.prototype.hasOwnProperty.call(playlists,clean)){alert('Это название уже занято или недоступно');return}playlists[clean]=[];persistLibrary();libraryView='playlist:'+clean;renderLibrary()}
+function load(i){if(!tr[i])return;ix=i;currentSource='Локальная музыка';a.src=tr[i].url;$('#t1').textContent=tr[i].name;$('#t2').textContent='Локальная музыка';let h=0;for(const ch of tr[i].name)h=(h*31+ch.charCodeAt(0))%360;document.documentElement.style.setProperty('--h',h);history=[tr[i].path,...history.filter(p=>p!==tr[i].path)].slice(0,100);persistLibrary();renderLibrary();publishNowPlaying();play()}
+function play(){if(!ctx){ctx=new AudioContext();fx=createFX(ctx);fx.hook(a);fx.set(S)}ctx.resume();a.play().catch(()=>{});publishNowPlaying()}
+async function add(files){const paths=[...files].map(f=>f.path).filter(Boolean);if(paths.length){const items=await window.fusionBridge?.importPaths(paths);addImported(items||[])}}
+$('#file').onchange=e=>add(e.target.files);addEventListener('dragover',e=>e.preventDefault());addEventListener('drop',e=>{e.preventDefault();add(e.dataTransfer.files)});
+$('#play').onclick=()=>{if(ix<0)return importMusic();a.paused?play():a.pause()};
+function stepNext(manual=true){if(!tr.length)return;if(shuffleOn){if(!shuffleBag.length)refillShuffle();const n=shuffleBag.shift();if(Number.isInteger(n))load(n);else if(tr.length===1)load(ix);return}load((ix+1)%tr.length)}
+function stepPrev(){if(!tr.length)return;if(a.currentTime>3){a.currentTime=0;return}if(shuffleOn){if(!shuffleBag.length)refillShuffle();const n=shuffleBag.shift();if(Number.isInteger(n))load(n);else if(tr.length===1)load(ix);return}load((ix-1+tr.length)%tr.length)}
+$('#next').onclick=()=>stepNext();$('#prev').onclick=stepPrev;
+$('#shuffle').onclick=()=>{shuffleOn=!shuffleOn;refillShuffle();syncModes()};$('#repeat').onclick=()=>{repeatMode=(repeatMode+1)%3;syncModes()};
+a.onplay=a.onpause=()=>{$('#pi').innerHTML=a.paused?'<path d="M8 5v14l11-7z"/>':'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';publishNowPlaying();renderLibrary()};
+a.onended=()=>{if(repeatMode===2){a.currentTime=0;play()}else if(repeatMode===1||ix<tr.length-1||shuffleOn)stepNext(false);else a.pause()};
+a.ontimeupdate=()=>{publishNowPlaying();$('#cur').textContent=fmt(a.currentTime);if(a.duration){const p=a.currentTime/a.duration*100;$('#seek').value=p*10;$('#seek').style.setProperty('--p',p+'%')}};
+a.onloadedmetadata=()=>$('#dur').textContent=fmt(a.duration);$('#seek').oninput=e=>{if(a.duration)a.currentTime=e.target.value/1000*a.duration};
+$('#vol').oninput=e=>{a.volume=e.target.value/100;e.target.style.setProperty('--p',e.target.value+'%');try{localStorage.setItem('fusion-volume',e.target.value)}catch{}};try{$('#vol').value=localStorage.getItem('fusion-volume')||80}catch{}$('#vol').dispatchEvent(new Event('input'));
+tr=loadJSON('fusion-library',[]).filter(t=>t&&t.path&&t.url);if(tr.length)renderLibrary();
+/* ---- effects menu ---- */
+let sec='eq',slT=null,slV='Выкл';
+let systemAudioStream=null, systemAudioContext=null, systemAudioTimer=null, systemAudioEnabled=false, systemSpectrum=[0,0,0,0,0];
+const MENU=[['eq','Эквалайзер'],['sp','Пространство'],['bc','Биткрашер'],['vn','Винил'],['spd','Скорость'],['sl','Таймер сна'],['is','Dynamic Island'],['th','Оформление'],['vp','Прокси / VPN'],['sys','Системный звук'],['pc','PC Monitor'],['ai','Fusion AI']];
+const ch=(k,list,cur)=>`<div class="chips">${list.map(([v,n])=>`<button class="ch ${cur==v?'on':''}" data-k="${k}" data-v="${v}">${n}</button>`).join('')}</div>`;
+const rg=(k,lab,min,max,val,u='')=>`<div class="r"><div><span>${lab}</span><b>${val}${u}</b></div><input type="range" data-k="${k}" min="${min}" max="${max}" value="${val}"></div>`;
+function panel(){const P={
+ eq:`<h4>10-полосный эквалайзер</h4><small>Все 10 полос подключены к аудиотракту. Эквалайзер работает с локальными файлами; внешние сайты могут ограничивать обработку защищённых потоков.</small>${['31','62','125','250','500','1K','2K','4K','8K','16K'].map((band,i)=>rg('e'+i,band+' Гц',-12,12,S.eq[i],' дБ')).join('')}<button class="ch" id="eqReset">Сбросить эквалайзер</button>`,
+ sp:`<h4>Пространство</h4>${ch('room',[['off','Выкл'],['room','Комната'],['hall','Зал'],['cathedral','Собор'],['plate','Пластина']],S.room)}${rg('wet','Сила',0,100,S.wet,'%')}<h4>Звук вокруг</h4>${ch('orb',[['off','Выкл'],['4D','4D'],['8D','8D'],['16D','16D']],S.orb)}<small>8D водит звук вокруг головы, 16D делает это быстрее.</small>`,
+ bc:`<h4>Биткрашер</h4>${rg('crush','Глубина (0 — выкл)',0,12,S.crush,' бит')}<small>Чем меньше бит, тем грубее и «пиксельнее» звук.</small>`,
+ vn:`<h4>Винил</h4><div class="r"><div><span>Треск и мягкие высокие</span><button class="tg ${S.vinyl?'on':''}" data-k="vinyl"></button></div></div>`,
+ spd:`<h4>Скорость</h4>${ch('speed',[[0.75,'0.75×'],[1,'1×'],[1.25,'1.25×'],[1.5,'1.5×'],[2,'2×']],S.speed)}${rg('spd','Точно',50,200,Math.round(S.speed*100),'%')}<small>Высота тона меняется вместе со скоростью.</small>`,
+ sl:`<h4>Таймер сна</h4>${ch('sleep',[['Выкл','Выкл'],['15','15 мин'],['30','30 мин'],['60','60 мин']],slV)}<small>Музыка плавно затихнет и остановится.</small>`,
+ is:`<h4>Расположение Dynamic Island</h4><small>Выбери положение или режим Custom, чтобы перетащить остров мышью в любое место.</small>${ch('islandAnchor',[['top-center','Сверху по центру'],['top-left','Сверху слева'],['top-right','Сверху справа'],['bottom-center','Снизу по центру'],['custom','Custom · вручную']],'custom')}<button class="ch" id="islandShow">Показать остров</button>`,
+ th:`<h4>Оформление и обои</h4><div class="wallPreview" id="wallPreview"></div><button class="action primary" id="chooseWallpaper">＋ Выбрать свои обои</button><button class="action" id="clearWallpaper">Вернуть стандартный фон</button><small>Поддерживаются PNG, JPG, WebP, GIF, MP4 и WebM. Видео запускается без звука.</small><h4>Акцентный цвет</h4>${ch('accent',[['#b9a0ff','Фиолетовый'],['#70d6ff','Голубой'],['#7ee0a3','Мятный'],['#ff9cbd','Розовый'],['#ffbf69','Янтарный'],['#ffffff','Белый']],S.accent)}<small>Цвет применяется к активным элементам интерфейса.</small>`,
+ pc:`<div class="pcWrap"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><h4>PC Monitor Pro</h4><small>Мониторинг Windows в реальном времени</small></div><button class="action" id="pcRefresh">Обновить</button></div><div class="pcGrid"><div class="pcCard"><small>Процессор</small><b id="pcCpu">—</b><div class="pcTrack"><i id="pcCpuBar"></i></div><span id="pcCpuMeta">Ожидание данных</span></div><div class="pcCard"><small>Оперативная память</small><b id="pcRam">—</b><div class="pcTrack"><i id="pcRamBar"></i></div><span id="pcRamMeta">Ожидание данных</span></div><div class="pcCard wide"><small>Видеокарта</small><b id="pcGpu">—</b><div class="pcTrack"><i id="pcGpuBar"></i></div><span id="pcGpuMeta">Для NVIDIA нужен nvidia-smi в PATH</span></div></div><div class="pcHistory"><div class="pcHistoryHead"><b>История нагрузки</b><span>Последние 60 измерений · обновление 4 сек</span></div><div class="pcHistoryGrid"><div><label>CPU</label><div class="pcSpark" id="pcCpuHistory"></div></div><div><label>RAM</label><div class="pcSpark" id="pcRamHistory"></div></div><div><label>GPU</label><div class="pcSpark" id="pcGpuHistory"></div></div></div></div><div class="pcInfo" id="pcInfo">Собираю системные показатели…</div><small>Температура CPU зависит от поддержки датчика материнской платой. Для NVIDIA используются данные nvidia-smi. Если показатель недоступен, Fusion покажет «нет данных», а не выдумает значение.</small></div>`,
+ ai:`<div class="aiWrap"><div class="aiHero"><div style="display:flex;align-items:center;gap:10px"><div class="aiOrb">✦</div><div><h4 style="margin:0 0 3px">Fusion AI</h4><small>Локальный помощник Fusion · базовые команды работают без интернета</small></div></div><p style="font-size:12px;line-height:1.5;margin:12px 0 0;color:var(--mut)">Управляй музыкой, VPN, обоями и Dynamic Island обычным языком. Подключение полноценной языковой модели добавим отдельным этапом.</p></div><div class="aiQuick"><button class="ch" data-aiq="Открой VPN">Открыть VPN</button><button class="ch" data-aiq="Открой обои">Обои</button><button class="ch" data-aiq="Покажи Dynamic Island">Dynamic Island</button><button class="ch" data-aiq="Статус системы">Статус ПК</button></div><div class="aiLog" id="aiLog"><div class="aiMsg">Привет! Я Fusion AI. Пока умею выполнять встроенные команды и помогать ориентироваться в приложении. Напиши, что сделать.</div></div><div class="aiInputRow"><input class="aiInput" id="aiInput" placeholder="Например: включи музыку…" autocomplete="off"><button class="aiSend" id="aiSend">Отправить</button></div><small>Пока это локальная версия помощника: запросы не отправляются сторонним сервисам.</small></div>`,
+ sys:`<h4>Мониторинг системного звука Windows</h4><small>Захват аудио с устройства вывода Windows через desktop loopback. Это показывает уровень и спектр звука из любых приложений; название трека берётся отдельно и доступно только если приложение Windows публикует медиаданные.</small><button class="action primary" id="startSystemAudio">Включить мониторинг</button><button class="action" id="stopSystemAudio">Остановить</button><div id="systemAudioStatus" class="hint">Мониторинг выключен. Для работы Windows может запросить разрешение на захват экрана/звука.</div><small>Fusion не воспроизводит и не записывает захваченный звук: он анализируется локально для визуализатора Dynamic Island.</small>`,
+ vp:`<h4>VLESS / VLESS Reality</h4><small>Выбери область действия VPN. Для работы нужен sing-box.exe. Режимы Windows требуют запуск Fusion от имени администратора: sing-box создаёт виртуальный TUN-адаптер и меняет маршруты Windows.</small><textarea id="vlessInput" class="field" rows="3" placeholder="vless://uuid@server:443?...#Имя"></textarea><div class="hint">Режим подключения</div><div class="chips"><button class="ch on" data-vpn-mode="full">Весь Windows</button><button class="ch" data-vpn-mode="split">Выбранные приложения</button><button class="ch" data-vpn-mode="fusion">Только Fusion</button></div><div id="splitApps" hidden><small>Имена процессов через запятую, например chrome.exe, telegram.exe, discord.exe. Указывай именно имя .exe.</small><input id="vpnProcesses" class="field" placeholder="chrome.exe, telegram.exe"></div><button class="action" id="chooseSingBox">Выбрать sing-box.exe</button><button class="action primary" id="connectVless">Подключить VLESS</button><button class="action" id="disconnectVless">Отключить</button><div id="vlessStatus" class="hint">Движок не выбран. Поддерживаются VLESS TCP/TLS, Reality, WebSocket и gRPC.</div><small>Полный и раздельный режимы используют Windows TUN. При ошибке прав запусти Fusion через «Запуск от имени администратора». При отключении sing-box должен восстановить маршруты.</small>`};
+ $('#menu').innerHTML=MENU.map(([k,n])=>`<button class="mi ${sec===k?'on':''}" data-s="${k}">${n}</button>`).join('');$('#pn').innerHTML=P[sec];
+ if(sec==='ai') initFusionAI();
+ if(sec==='pc') initPcMonitor();
+ document.querySelectorAll('.mi').forEach(b=>b.onclick=()=>{sec=b.dataset.s;panel()});
+ document.querySelectorAll('#pn [data-k]').forEach(el=>{const k=el.dataset.k;
+  if(el.type==='range')el.oninput=()=>{set(k,+el.value);el.previousElementSibling.querySelector('b').textContent=el.value+(k=='wet'?'%':k=='spd'?'%':k.startsWith('e')?' дБ':k=='crush'?' бит':'');el.style.setProperty('--p',(el.value-el.min)/(el.max-el.min)*100+'%')};
+  else el.onclick=()=>{set(k,el.dataset.v??(S.vinyl?0:1));panel()}});
+ $('#eqReset')?.addEventListener('click',()=>{S.eq=Array(10).fill(0);saveSettings();fx&&fx.set(S);panel()});
+ $('#islandShow')?.addEventListener('click',()=>window.fusionBridge?.minimizeToIsland());
+ $('#startSystemAudio')?.addEventListener('click',async()=>{const status=$('#systemAudioStatus');status.textContent='Подключаю системный аудиопоток…';try{const source=await window.fusionBridge?.getSystemAudioSource();if(!source?.id)throw new Error('Не удалось получить источник звука Windows');systemAudioStream=await navigator.mediaDevices.getUserMedia({audio:{mandatory:{chromeMediaSource:'desktop',chromeMediaSourceId:source.id}},video:{mandatory:{chromeMediaSource:'desktop',chromeMediaSourceId:source.id,maxWidth:1,maxHeight:1,maxFrameRate:1}}});systemAudioStream.getVideoTracks().forEach(t=>t.stop());systemAudioStream.getAudioTracks()[0]?.addEventListener('ended',()=>stopSystemAudio(),{once:true});systemAudioContext=new AudioContext();await systemAudioContext.resume();const input=systemAudioContext.createMediaStreamSource(systemAudioStream);const analyser=systemAudioContext.createAnalyser();analyser.fftSize=512;analyser.smoothingTimeConstant=.78;input.connect(analyser);const data=new Uint8Array(analyser.frequencyBinCount);systemAudioEnabled=true;clearInterval(systemAudioTimer);systemAudioTimer=setInterval(()=>{if(!systemAudioEnabled||!analyser)return;analyser.getByteFrequencyData(data);const ranges=[[1,4],[4,10],[10,24],[24,60],[60,180]];systemSpectrum=ranges.map(([a,b])=>{let sum=0;for(let i=a;i<b;i++)sum+=data[i]||0;return Math.min(1,(sum/Math.max(1,b-a))/150)});const level=Math.min(1,systemSpectrum.reduce((a,b)=>a+b,0)/5*1.7);publishNowPlayingWithSystemAudio(level,systemSpectrum)},100);status.textContent='Системный звук подключён. Включи музыку или звук в любом приложении Windows.'}catch(err){status.textContent='Не удалось включить мониторинг: '+(err.message||err);stopSystemAudio()}});
+ $('#stopSystemAudio')?.addEventListener('click',()=>{stopSystemAudio();const st=$('#systemAudioStatus');if(st)st.textContent='Мониторинг остановлен.'});
+ $('#chooseWallpaper')?.addEventListener('click',async()=>{const item=await window.fusionBridge?.selectWallpaper();if(item){localStorage.setItem('fusion-wallpaper',JSON.stringify(item));applyWallpaper(item);const preview=$('#wallPreview');if(preview&&item.type==='image')preview.style.backgroundImage=`url(\"${item.url}\")`;else if(preview)preview.textContent='Видеообои активны'}});
+ $('#clearWallpaper')?.addEventListener('click',()=>{localStorage.removeItem('fusion-wallpaper');applyWallpaper(null);const preview=$('#wallPreview');if(preview)preview.style.backgroundImage=''});
+ const oldWallpaper=loadJSON('fusion-wallpaper',null);if(oldWallpaper&&$('#wallPreview')&&oldWallpaper.type==='image')$('#wallPreview').style.backgroundImage=`url(\"${oldWallpaper.url}\")`;
+ let vpnMode='full';document.querySelectorAll('[data-vpn-mode]').forEach(b=>b.addEventListener('click',()=>{vpnMode=b.dataset.vpnMode;document.querySelectorAll('[data-vpn-mode]').forEach(x=>x.classList.toggle('on',x===b));$('#splitApps').hidden=vpnMode!=='split'}));$('#connectVless')?.addEventListener('click',async()=>{const value=$('#vlessInput')?.value.trim()||localStorage.getItem('fusion-vless-profile')||'';const status=$('#vlessStatus');if(!value.startsWith('vless://')){status.textContent='Вставь корректную ссылку vless://';return}localStorage.setItem('fusion-vless-profile',value);const processNames=($('#vpnProcesses')?.value||'').split(',').map(x=>x.trim()).filter(Boolean);status.textContent='Проверяю конфигурацию и запускаю sing-box…';const result=await window.fusionBridge?.startVless(value,{mode:vpnMode,processNames});status.textContent=result?.ok?`Подключено: ${result.name}. Режим: ${{full:'весь Windows',split:'выбранные приложения',fusion:'только Fusion'}[result.mode]}. ${result.proxy}.`:(result?.error||'Не удалось запустить подключение')});
+ $('#disconnectVless')?.addEventListener('click',async()=>{await window.fusionBridge?.stopVless();$('#vlessStatus').textContent='VLESS отключён. Сетевые сессии Fusion возвращены в прямой режим.'});
+ $('#chooseSingBox')?.addEventListener('click',async()=>{const name=await window.fusionBridge?.chooseSingBox();if(name)$('#vlessStatus').textContent=`Движок выбран: ${name}. Теперь можно подключить VLESS.`});
+ const savedVless=localStorage.getItem('fusion-vless-profile');if(savedVless&&$('#vlessInput'))$('#vlessInput').value=savedVless;
+ document.querySelectorAll('#pn input[type=range]').forEach(e=>e.style.setProperty('--p',(e.value-e.min)/(e.max-e.min)*100+'%'))}
+let pcMonitorTimer = null;
+const pcHistory={cpu:[],ram:[],gpu:[]};
+function renderPcHistory(key,value){const el=$('#pc'+key[0].toUpperCase()+key.slice(1)+'History');if(!el)return;if(value===null||value===undefined||!Number.isFinite(Number(value)))return;const a=pcHistory[key];a.push(Math.max(0,Math.min(100,Number(value))));if(a.length>60)a.shift();el.innerHTML=a.map((v,i)=>`<i title="${v.toFixed(0)}%" style="height:${Math.max(3,v)}%;opacity:${.35+.65*(i+1)/a.length}"></i>`).join('')}
+async function initPcMonitor(){
+ const setText=(id,value)=>{const el=$('#'+id);if(el)el.textContent=value};
+ const setBar=(id,value)=>{const el=$('#'+id);if(el)el.style.width=Math.max(0,Math.min(100,Number(value)||0))+'%'};
+ const fmt=(v,suffix='')=>v===null||v===undefined||Number.isNaN(Number(v))?'нет данных':`${v}${suffix}`;
+ const refresh=async()=>{
+  setText('pcInfo','Обновляю показатели…');
+  try{
+   const d=await window.fusionBridge?.getPcTelemetry();
+   if(!d?.supported){setText('pcInfo',d?.error||'Телеметрия недоступна.');return;}
+   const c=d.cpu||{},r=d.ram||{},g=d.gpu||{},sys=d.system||{};
+   setText('pcCpu',fmt(c.load,'%'));setBar('pcCpuBar',c.load);setText('pcCpuMeta',`${c.name||'Процессор'} · ${fmt(c.cores)} ядер · ${fmt(c.logical)} потоков · ${fmt(c.temperature,' °C')}`);
+   setText('pcRam',`${fmt(r.used,' ГБ')} / ${fmt(r.total,' ГБ')}`);setBar('pcRamBar',r.percent);setText('pcRamMeta',`${fmt(r.percent,'%')} занято · свободно ${fmt(r.free,' ГБ')}`);
+   setText('pcGpu',g.name||'Видеокарта не определена');setBar('pcGpuBar',g.load);setText('pcGpuMeta',`Загрузка ${fmt(g.load,'%')} · VRAM ${g.memoryUsed==null?'нет данных':`${g.memoryUsed} / ${g.memoryTotal} МБ`} · ${fmt(g.temperature,' °C')}`);
+   renderPcHistory('cpu',c.load);renderPcHistory('ram',r.percent);renderPcHistory('gpu',g.load);
+   setText('pcInfo',`${sys.windows||'Windows'} · ${sys.computer||''} · Время работы ${fmt(sys.uptimeHours,' ч')} · Обновлено ${new Date(d.sampledAt||Date.now()).toLocaleTimeString()}`);
+  }catch(e){setText('pcInfo','Ошибка мониторинга: '+(e.message||e));}
+ };
+ $('#pcRefresh')?.addEventListener('click',refresh);
+ if(pcMonitorTimer)clearInterval(pcMonitorTimer);
+ await refresh();pcMonitorTimer=setInterval(()=>{if(sec==='pc')refresh();else{clearInterval(pcMonitorTimer);pcMonitorTimer=null}},4000);
+}
+
+function initFusionAI(){
+ const log=$('#aiLog'),input=$('#aiInput'),send=$('#aiSend');if(!log||!input||!send)return;
+ const add=(text,who='bot')=>{const el=document.createElement('div');el.className='aiMsg'+(who==='user'?' user':'');el.textContent=text;log.appendChild(el);log.scrollTop=log.scrollHeight};
+ const run=raw=>{const q=String(raw||'').trim();if(!q)return;add(q,'user');input.value='';const t=q.toLowerCase().replace(/ё/g,'е');let reply='Пока не знаю такую команду. Попробуй: «открой VPN», «открой обои», «покажи Dynamic Island», «пауза», «следующий трек» или «статус системы».';
+  if(/(пауза|останови музыку|выключи музыку|остановить музыку)/.test(t)){if(cur==='loc')$('#play')?.click();else controlEmbedded('toggle-play');reply='Отправил команду паузы активному плееру.'}
+  else if(/(включи музыку|продолжи музыку|играй|воспроизведи)/.test(t)){if(cur==='loc')$('#play')?.click();else controlEmbedded('toggle-play');reply='Отправил команду воспроизведения активному плееру.'}
+  else if(/(следующ|дальше|next трек)/.test(t)){if(cur==='loc')$('#next')?.click();else controlEmbedded('next');reply='Переключаю на следующий трек.'}
+  else if(/(предыдущ|прошлый трек)/.test(t)){if(cur==='loc')$('#prev')?.click();else controlEmbedded('previous');reply='Переключаю на предыдущий трек.'}
+  else if(/(отключи|выключи).*(vpn|впн|прокси)/.test(t)){document.querySelector('[data-s=\"vp\"]')?.click();setTimeout(()=>$('#disconnectVless')?.click(),0);reply='Отправил команду отключения VLESS. Проверь статус в панели VPN.'}
+  else if(/(vpn|впн|прокси)/.test(t)){sec='vp';panel();reply='Открыл настройки VPN. Вставь VLESS-ссылку и выбери режим подключения.'}
+  else if(/(мои файлы|локальн.*музык|библиотек)/.test(t)){go('loc');reply='Открыл локальную музыкальную библиотеку Fusion.'}
+  else if(/(обо|wallpaper|фон|тему|оформлен)/.test(t)){sec='th';panel();reply='Открыл оформление. Здесь можно выбрать изображение, GIF или видео в качестве обоев.'}
+  else if(/(остров|dynamic island)/.test(t)){sec='is';panel();window.fusionBridge?.minimizeToIsland();reply='Открыл настройки Dynamic Island и отправил команду показать остров.'}
+  else if(/громкост/.test(t)){const m=t.match(/(\d{1,3})/);if(m){const v=Math.max(0,Math.min(100,Number(m[1])));$('#vol').value=v;$('#vol').dispatchEvent(new Event('input'));reply='Громкость Fusion установлена на '+v+'%.'}else reply='Напиши уровень громкости числом от 0 до 100, например «громкость 40».'}
+  else if(/(статус|систем|компьютер|пк|характеристик)/.test(t)){const mem=performance.memory;reply='Диагностика Fusion:\n• Платформа: '+navigator.platform+'\n• Версия Chromium: '+(navigator.userAgent.match(/Chrome\/([\d.]+)/)?.[1]||'не определена')+'\n• Текущий раздел: '+cur+'\n• Локальная библиотека: '+tr.length+' трек(ов)'+(mem?'\n• Память JS: '+Math.round(mem.usedJSHeapSize/1048576)+' МБ':'')+'\n\nТемпературы CPU/GPU и загрузку железа подключим в модуле PC Monitor.'}
+  else if(/(помощь|что умеешь|команд)/.test(t)){reply='Сейчас доступны команды:\n• включи музыку / пауза\n• следующий трек / предыдущий трек\n• открой VPN\n• открой обои\n• покажи Dynamic Island\n• статус системы\n\nПолноценный диалог с облачной или локальной языковой моделью — следующий этап Fusion AI.'}
+  add(reply);
+ };
+ send.onclick=()=>run(input.value);input.onkeydown=e=>{if(e.key==='Enter')run(input.value)};
+ document.querySelectorAll('[data-aiq]').forEach(b=>b.onclick=()=>run(b.dataset.aiq));
+}
+function set(k,v){if(k[0]==='e'&&/^e[0-9]$/.test(k))S.eq[+k.slice(1)]=v;else if(k==='spd')S.speed=v/100;else if(k==='speed')S.speed=+v;
+ else if(k==='islandAnchor'){window.fusionBridge?.setIslandAnchor(v);return}
+ else if(k==='accent'){S.accent=v;applyAccent()}
+ else if(k==='sleep'){slV=v;clearTimeout(slT);if(v!=='Выкл')slT=setTimeout(fade,v*60000)}
+ else if(k==='room'||k==='orb')S[k]=v;else S[k]=+v;
+ saveSettings();
+ S.active=S.eq.some(x=>x)||S.room!=='off'||S.orb!=='off'||S.crush>0||S.vinyl>0||S.speed!==1;
+ a.playbackRate=S.speed;a.preservesPitch=false;fx&&fx.set(S);Object.values(views).forEach(w=>{try{w.send('fx',S)}catch(e){}});if(['speed','room','orb','sleep'].includes(k))panel()}
+function fade(){let v=a.volume;const id=setInterval(()=>{v-=.02;a.volume=Math.max(v,0);Object.values(views).forEach(w=>{try{w.setAudioMuted(true)}catch(e){}});if(v<=0){clearInterval(id);a.pause();a.volume=$('#vol').value/100;Object.values(views).forEach(w=>{try{w.setAudioMuted(false);w.executeJavaScript("document.querySelectorAll('video,audio').forEach(e=>e.pause())")}catch(e){}})}},160)}
+$('#fxb').onclick=()=>{pop.classList.remove('closed');pop.classList.toggle('show');panel()};
+const pop=$('#pop'),edge=$('#popEdge');
+function revealPop(){pop.classList.remove('closed');pop.classList.add('show');panel()}
+edge.addEventListener('pointerenter',revealPop);
+pop.addEventListener('pointerenter',()=>pop.classList.remove('closed'));
+edge.addEventListener('pointerleave',()=>setTimeout(()=>{if(!pop.matches(':hover'))pop.classList.remove('show')},180));
+pop.addEventListener('pointerleave',()=>setTimeout(()=>{if(!edge.matches(':hover'))pop.classList.remove('show')},180));
+edge.onclick=revealPop;
+$('#popClose').onclick=()=>{pop.classList.remove('show');pop.classList.add('closed')};
+async function controlEmbedded(action){const view=views[cur];if(!view)return false;const code=`(()=>{const media=[...document.querySelectorAll('video,audio')];const playing=media.find(m=>!m.paused)||media[0];if('${action}'==='toggle-play'){if(!playing)return false;if(playing.paused)playing.play().catch(()=>{});else playing.pause();return true;}const re='${action}'==='next'?/(next|следующ|далее)/i:/(previous|prev|предыдущ)/i;const btn=[...document.querySelectorAll('button,[role=button]')].find(b=>re.test((b.getAttribute('aria-label')||'')+' '+(b.getAttribute('title')||'')));if(btn){btn.click();return true;}return false;})()`;try{return await view.executeJavaScript(code)}catch{return false}}
+window.fusionBridge?.onIslandAction(action=>{if(action==='open-player'){window.focus();return}if(cur!=='loc'){controlEmbedded(action);return}if(action==='toggle-play')$('#play').click();else if(action==='next')$('#next').click();else if(action==='previous')$('#prev').click()});
+addEventListener('keydown',e=>{const tag=(e.target?.tagName||'').toLowerCase();if(['input','textarea'].includes(tag)||e.target?.isContentEditable)return;if(e.code==='Space'){e.preventDefault();$('#play').click()}else if(e.code==='ArrowRight'&&e.altKey){e.preventDefault();stepNext()}else if(e.code==='ArrowLeft'&&e.altKey){e.preventDefault();stepPrev()}else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='o'){e.preventDefault();importMusic()}});
+rail();lyr();syncModes();publishNowPlaying();
+</script></body></html>

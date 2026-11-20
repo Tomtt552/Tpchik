@@ -1,0 +1,49 @@
+{
+  "name": "fusion-desktop",
+  "productName": "Fusion Desktop",
+  "version": "0.13.1",
+  "description": "Fusion Desktop Pro — Music Center, Dynamic Island, Wallpapers, VLESS VPN, PC Monitor and Fusion AI foundation",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis",
+    "build:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.fusion.desktop",
+    "productName": "Fusion Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**/*",
+      "!node_modules/.cache/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Fusion Desktop",
+      "deleteAppDataOnUninstall": false
+    },
+    "artifactName": "${productName}-${version}-Setup-${arch}.${ext}"
+  }
+}
